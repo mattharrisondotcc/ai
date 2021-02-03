@@ -1,0 +1,76 @@
+#!/usr/bin/env python3.6
+
+import argparse
+import errno
+from inspect import currentframe, getframeinfo
+import os.path as path
+
+# start debugging block
+# Verbose/debugging output includes filename and line number
+# Example: print(frameinfo.filename, frameinfo.lineno)
+DEBUG=True
+
+def dbgp(*args, debugging=True):
+    '''
+    Prints the source code file name and line number of this function's
+    execution, followed by any arguments you pass in.
+    Disable a specific dbgp() call with kwarg: debugging=False.
+    '''
+    if DEBUG and debugging:
+        cf = currentframe()
+        frameinfo = getframeinfo(cf)
+        # print(str(frameinfo.filename) + ':' + str(frameinfo.lineno), *args)
+        print(f'{frameinfo.filename:->15}:{cf.f_back.f_lineno:0>3}', *args)
+# end debugging block
+
+# start argparse block
+# Handles command line inputs as named arguments
+parser = argparse.ArgumentParser()
+
+parser.add_argument('infile',
+                    help='Input File Name')
+parser.add_argument('origin',
+                    help='Origin City Name')
+parser.add_argument('destination',
+                    help='Destination City Name')
+parser.add_argument('heuristic',
+                    help='Heuristic Function to Use (default is None)',
+                    nargs='?', default=None)
+
+def process_cli_args():
+    args = parser.parse_args()
+    return args.infile, args.origin, args.destination, args.heuristic
+# end argparse block
+
+def is_infile_valid(infile):
+    if not path.isfile(infile):
+        print('"{infile}" is not a valid file.')
+        exit(errno.ENOENT)
+    dbgp(f'"{infile}" infile is valid filename')
+    return True
+
+def process_input_file(infile):
+    if is_infile_valid(infile):
+        with open(infile) as f:
+            dbgp(f'"{infile}" infile opened successfully')
+            # while (line := f.read()) != 'END OF INPUT\n':
+            #     print(line)
+            lines = f.readlines()
+        for i, line in enumerate(lines):
+            lines[i] = line.replace('\n', '')
+        return lines
+
+def main():
+    dbgp("Verbose/debugging output is on.")
+    args = parser.parse_args()
+    infile, origin, dest, heuristic = process_cli_args()
+    dbgp('CLI arguments \n\t\t\t\t\t'
+         f'{"infile":<15}{infile}\n\t\t\t\t\t'
+         f'{"origin":<15}{origin}\n\t\t\t\t\t'
+         f'{"dest":<15}{dest}\n\t\t\t\t\t'
+         f'{"heuristic":<15}{heuristic}')
+    process_input_file(infile)
+
+if __name__ == '__main__':
+    main()
+    print('End of program. Goodbye.')
