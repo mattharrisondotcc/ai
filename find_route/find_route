@@ -1,9 +1,10 @@
 #!/usr/bin/env python3.6
 
+from inspect import currentframe, getframeinfo
 import argparse
 import errno
-from inspect import currentframe, getframeinfo
 import os.path as path
+from pprint import pprint
 
 # start debugging block
 # Verbose/debugging output includes filename and line number
@@ -50,15 +51,59 @@ def is_infile_valid(infile):
     return True
 
 def process_input_file(infile):
+    '''
+    Processes the input file and returns the number of cities (city_count),
+    the adjacency matrix/graph of costs between connected cities (adj_matrix),
+    and a map (dict) of city names to their corresponding idx in adj_matrix.
+    '''
+
     if is_infile_valid(infile):
         with open(infile) as f:
-            dbgp(f'"{infile}" infile opened successfully')
             # while (line := f.read()) != 'END OF INPUT\n':
             #     print(line)
             lines = f.readlines()
+        dbgp(f'"{infile}" infile opened successfully')
+
+        # Removes the last newline and 'END OF INPUT\n' line
+        lines.pop()
+        lines.pop()
+
+        lines.sort()
+        city_count = 0
+        city_idx = dict()
+
         for i, line in enumerate(lines):
-            lines[i] = line.replace('\n', '')
-        return lines
+            src, dest, cost = line.replace('\n', '').split()
+            if src not in city_idx:
+                city_idx[src] = city_count
+                city_count += 1
+            if dest not in city_idx:
+                city_idx[dest] = city_count
+                city_count += 1
+
+        # The size of the nxn matrix. n max is the number of edges * 2, because
+        # every line (edge) in the input file could have distinct cities
+        # (vertices/nodes)
+        # UPDATE: I decided to just count the number of cities first, and make
+        # it that size + 1, just to make the adjacency matrix dimensions
+        # smaller.  This will save on space, but it will cost 2N (ie double) the
+        # input size in time, where N is the number of lines in the input file.
+        # UPDATE: this no longer needs an increment because I changed the
+        # previous loop to start with a 0 index and increment city count
+        # assigning the idx to the new city.
+        matrix_size = city_count
+
+        # This shouldn't be 'inf' because the cost between non-connected
+        # vertices isn't max value, *there is none* because there is no edge...
+        # adj_matrix = [[float('inf') for _ in range(100)] for __ in range(100)]
+        adj_matrix = [[None for _ in range(matrix_size)] for __ in
+                      range(matrix_size)]
+
+        for i, line in enumerate(lines):
+            src, dest, cost = line.replace('\n', '').split()
+            adj_matrix[city_idx[src]][city_idx[dest]] = cost
+            adj_matrix[city_idx[dest]][city_idx[src]] = cost
+        return city_count, city_idx, adj_matrix
 
 def main():
     dbgp("Verbose/debugging output is on.")
@@ -69,7 +114,7 @@ def main():
          f'{"origin":<15}{origin}\n\t\t\t\t\t'
          f'{"dest":<15}{dest}\n\t\t\t\t\t'
          f'{"heuristic":<15}{heuristic}')
-    process_input_file(infile)
+    city_count, city_idx, adj_matrix = process_input_file(infile)
 
 if __name__ == '__main__':
     main()
