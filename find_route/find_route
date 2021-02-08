@@ -1,10 +1,11 @@
 #!/usr/bin/env python3.6
 
+from collections import deque
 from inspect import currentframe, getframeinfo
+from pprint import pprint
 import argparse
 import errno
 import os.path as path
-from pprint import pprint
 
 # start debugging block
 # Verbose/debugging output includes filename and line number
@@ -34,21 +35,66 @@ parser.add_argument('origin',
                     help='Origin City Name')
 parser.add_argument('destination',
                     help='Destination City Name')
-parser.add_argument('heuristic',
+parser.add_argument('heuristic_file',
                     help='Heuristic Function to Use (default is None)',
                     nargs='?', default=None)
 
 def process_cli_args():
     args = parser.parse_args()
-    return args.infile, args.origin, args.destination, args.heuristic
+    return args.infile, args.origin, args.destination, args.heuristic_file
 # end argparse block
 
-def is_infile_valid(infile):
-    if not path.isfile(infile):
-        print('"{infile}" is not a valid file.')
+class Node(object):
+    def __init__(self, cum_cost, prev_path, heuristic=0):
+        self.cum_cost = cum_cost
+        self.heuristic = heuristic
+        self.F = cum_cost + heuristic
+        self.path = prev_path
+
+def is_file_valid(file_name):
+    if not path.isfile(file_name):
+        print(f'"{file_name}" is not a valid file.')
         exit(errno.ENOENT)
-    dbgp(f'"{infile}" infile is valid filename')
+    dbgp(f'"{file_name}" is a valid file.')
     return True
+
+def informedSearch():
+    pass
+
+def uninformedSearch():
+    pass
+
+def read_lines_from_file(name):
+    '''
+    Reads data lines from an input file, removes the last 2 unnecessary lines,
+    and returns the sorted list of "tokenized" line items (ie a list of lists of
+    words from each line).
+    '''
+
+    with open(name) as f:
+        lines = f.readlines()
+    lines.pop()
+    lines.pop()
+    lines.sort()
+    return list(map(lambda x: x.replace('\n', '').split(), lines))
+
+def process_heuristic_file(heuristic_filename):
+    '''
+    Reads the heuristic file if given and renders the data as a dictionary of
+    heuristic function values ie h(City_Name) -> estimate to goal state.
+    '''
+
+    if is_file_valid(heuristic_filename):
+        lines = read_lines_from_file(heuristic_filename)
+        dbgp(f'"{heuristic_filename}" heuristic file opened successfully.')
+
+        h_vals = dict()
+
+        for line in lines:
+            city, heuristic_val = line
+            h_vals[city] = int(heuristic_val)
+
+        return h_vals
 
 def process_input_file(infile):
     '''
@@ -57,23 +103,19 @@ def process_input_file(infile):
     and a map (dict) of city names to their corresponding idx in adj_matrix.
     '''
 
-    if is_infile_valid(infile):
-        with open(infile) as f:
-            # while (line := f.read()) != 'END OF INPUT\n':
-            #     print(line)
-            lines = f.readlines()
+    if is_file_valid(infile):
+        # with open(infile) as f:
+        #     # while (line := f.read()) != 'END OF INPUT\n':
+        #     #     print(line)
+        #     lines = f.readlines()
+        lines = read_lines_from_file(infile)
         dbgp(f'"{infile}" infile opened successfully')
 
-        # Removes the last newline and 'END OF INPUT\n' line
-        lines.pop()
-        lines.pop()
-
-        lines.sort()
         city_count = 0
         city_idx = dict()
 
-        for i, line in enumerate(lines):
-            src, dest, cost = line.replace('\n', '').split()
+        for line in lines:
+            src, dest, cost = line
             if src not in city_idx:
                 city_idx[src] = city_count
                 city_count += 1
@@ -99,22 +141,50 @@ def process_input_file(infile):
         adj_matrix = [[None for _ in range(matrix_size)] for __ in
                       range(matrix_size)]
 
-        for i, line in enumerate(lines):
-            src, dest, cost = line.replace('\n', '').split()
+        for line in lines:
+            src, dest, cost = line
+            cost = int(cost)
             adj_matrix[city_idx[src]][city_idx[dest]] = cost
             adj_matrix[city_idx[dest]][city_idx[src]] = cost
         return city_count, city_idx, adj_matrix
 
+def final_output():
+    # >>> Example output:
+    # nodes expanded: 12
+    # nodes generated: 20
+    # distance: 297.0 km
+    # route:
+    # Bremen to Hannover, 132.0 km
+    # Hannover to Kassel, 165.0 km
+    print('nodes expanded:', nodes_exp)
+    print('nodes generated:', nodes_gen)
+    print('distance:', cum_cost)
+    print('route:')
+    for step in steps:
+        print(f'{src} to {dest}, {cost:.1f} km')
+
 def main():
     dbgp("Verbose/debugging output is on.")
+
     args = parser.parse_args()
-    infile, origin, dest, heuristic = process_cli_args()
+    infile, origin, dest, heuristic_file = process_cli_args()
+
     dbgp('CLI arguments \n\t\t\t\t\t'
          f'{"infile":<15}{infile}\n\t\t\t\t\t'
          f'{"origin":<15}{origin}\n\t\t\t\t\t'
          f'{"dest":<15}{dest}\n\t\t\t\t\t'
-         f'{"heuristic":<15}{heuristic}')
+         f'{"heuristic_file":<15}{heuristic_file}')
+
     city_count, city_idx, adj_matrix = process_input_file(infile)
+    h_vals = None
+
+    if heuristic_file is not None:
+        h_vals = process_heuristic_file(heuristic_file)
+
+    dbgp(f'h_vals: {h_vals}', '\n')
+    dbgp('adj_matrix:')
+    for i, row in enumerate(adj_matrix):
+        dbgp(row)
 
 if __name__ == '__main__':
     main()
