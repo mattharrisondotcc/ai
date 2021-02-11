@@ -1,0 +1,88 @@
+Arguments : ['input1.txt', 'London', 'Kassel']
+
+Uninformed Search selected
+
+Nodes Expanded: 0
+Nodes Generated: 1
+Fringe: 
+	< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >
+Closed: 
+	[]
+
+Expanding Node 1: < state = London g(n) = 0, d = 0, Parent = Pointer to {None} >
+Generating successors to London
+Nodes Expanded: 1
+Nodes Generated: 2
+Fringe: 
+	< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >
+Closed: 
+	['London']
+
+Expanding Node 2: < state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >
+Generating successors to Birmingham
+Nodes Expanded: 2
+Nodes Generated: 5
+Fringe: 
+	< state = Manchester g(n) = 201.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >
+	< state = Bristol g(n) = 202.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >
+	< state = London g(n) = 234.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >
+Closed: 
+	['London', 'Birmingham']
+
+Expanding Node 3: < state = Manchester g(n) = 201.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >
+Generating successors to Manchester
+Nodes Expanded: 3
+Nodes Generated: 6
+Fringe: 
+	< state = Bristol g(n) = 202.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >
+	< state = London g(n) = 234.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >
+	< state = Birmingham g(n) = 285.0, d = 3, Parent = Pointer to {< state = Manchester g(n) = 201.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >} >
+Closed: 
+	['London', 'Birmingham', 'Manchester']
+
+Expanding Node 4: < state = Bristol g(n) = 202.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >
+Generating successors to Bristol
+Nodes Expanded: 4
+Nodes Generated: 7
+Fringe: 
+	< state = London g(n) = 234.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >
+	< state = Birmingham g(n) = 285.0, d = 3, Parent = Pointer to {< state = Manchester g(n) = 201.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >} >
+	< state = Birmingham g(n) = 287.0, d = 3, Parent = Pointer to {< state = Bristol g(n) = 202.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >} >
+Closed: 
+	['London', 'Birmingham', 'Manchester', 'Bristol']
+
+Expanding Node 5: < state = London g(n) = 234.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >
+Generating successors to London. London is already in closed so 0 successors
+Nodes Expanded: 5
+Nodes Generated: 7
+Fringe: 
+	< state = Birmingham g(n) = 285.0, d = 3, Parent = Pointer to {< state = Manchester g(n) = 201.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >} >
+	< state = Birmingham g(n) = 287.0, d = 3, Parent = Pointer to {< state = Bristol g(n) = 202.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >} >
+Closed: 
+	['London', 'Birmingham', 'Manchester', 'Bristol']
+
+Expanding Node 6: < state = Birmingham g(n) = 285.0, d = 3, Parent = Pointer to {< state = Manchester g(n) = 201.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >} >
+Generating successors to Birmingham. Birmingham is already in closed so 0 successors
+Nodes Expanded: 6
+Nodes Generated: 7
+Fringe: 
+	< state = Birmingham g(n) = 287.0, d = 3, Parent = Pointer to {< state = Bristol g(n) = 202.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >} >
+Closed: 
+	['London', 'Birmingham', 'Manchester', 'Bristol']
+
+Expanding Node 7: < state = Birmingham g(n) = 287.0, d = 3, Parent = Pointer to {< state = Bristol g(n) = 202.0, d = 2, Parent = Pointer to {< state = Birmingham g(n) = 117.0, d = 1, Parent = Pointer to {< state = London g(n) = 0, d = 0, Parent = Pointer to {None} >} >} >} >
+Generating successors to Birmingham. Birmingham is already in closed so 0 successors
+Nodes Expanded: 7
+Nodes Generated: 7
+Fringe: 
+	Empty
+Closed: 
+	['London', 'Birmingham', 'Manchester', 'Bristol']
+
+Fringe Empty. Goal Not Found. Generating Output
+
+nodes expanded: 7
+nodes generated:7
+distance: infinity
+route:
+none

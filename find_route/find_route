@@ -1,8 +1,9 @@
 #!/usr/bin/env python3.6
 
-from collections import deque
+from collections import defaultdict
 from inspect import currentframe, getframeinfo
 from pprint import pprint
+from queue import PriorityQueue
 import argparse
 import errno
 import os.path as path
@@ -10,7 +11,7 @@ import os.path as path
 # start debugging block
 # Verbose/debugging output includes filename and line number
 # Example: print(frameinfo.filename, frameinfo.lineno)
-DEBUG=True
+DEBUG=False
 
 def dbgp(*args, debugging=True):
     '''
@@ -45,11 +46,21 @@ def process_cli_args():
 # end argparse block
 
 class Node(object):
-    def __init__(self, cum_cost, prev_path, heuristic=0):
-        self.cum_cost = cum_cost
+    def __init__(self, city_name, cuml_cost, prev_path, heuristic=0):
+        self.F = cuml_cost + heuristic
+        self.city_name = city_name
+        self.cuml_cost = cuml_cost
         self.heuristic = heuristic
-        self.F = cum_cost + heuristic
-        self.path = prev_path
+        self.path = prev_path + [city_name]
+
+    def __lt__(self, rhs):
+        self.F < rhs.F
+
+    def __gt__(self, rhs):
+        self.F > rhs.F
+
+    def __hash__(self):
+        return hash(self.city_name)
 
 def is_file_valid(file_name):
     if not path.isfile(file_name):
@@ -58,11 +69,56 @@ def is_file_valid(file_name):
     dbgp(f'"{file_name}" is a valid file.')
     return True
 
-def informedSearch():
-    pass
+def informedSearch(edges, origin, dest, h_vals):
+    closed_set = set()
+    fringe = PriorityQueue()
+    n_exp = 0
+    n_gen = 1
+    path = []
+    origin_node = Node(origin, 0, path, heuristic=0)
+    fringe.put((0, origin_node))
 
-def uninformedSearch():
-    pass
+    while not fringe.empty():
+        current = fringe.get()[1]
+        dbgp(f'current city: {current.city_name}')
+
+        # Increments the "nodes expanded" counter
+        n_exp += 1
+
+        if current.city_name == dest:
+            dbgp(f'Goal state found')
+            final_output(edges, current.cuml_cost, n_gen, n_exp, current.path)
+
+        if current.city_name in closed_set:
+            dbgp(f'  {current.city_name} in closed set, no children to expand',
+                 '\n')
+            continue
+        else:
+            # This loop expands the selected node from the fringe
+            for city_name, cost in edges[current.city_name].items():
+                # Increments the "nodes generated" counter
+                priority = current.cuml_cost + cost + h_vals[city_name]
+                dbgp(f'  generating: {city_name}')
+
+                n_gen += 1
+                # if city_name not in closed_set:
+                new_node = Node(city_name, current.cuml_cost + cost, current.path,
+                                heuristic=h_vals[city_name])
+                fringe.put((priority, new_node))
+                dbgp(f'      heuristic value: {h_vals[city_name]}')
+                dbgp(f'      cost: {cost}')
+                dbgp(f'      cuml_cost + cost: {current.cuml_cost + cost}')
+                dbgp(f'      new cuml_cost: {current.cuml_cost + cost + h_vals[city_name]}')
+
+        closed_set.add(current.city_name)
+        dbgp(f'end expand: n_exp {n_exp}, n_gen {n_gen}, {closed_set},'
+             f'len(fringe): {fringe.qsize()}', '\n')
+
+    final_output(edges, "infinity", n_gen, n_exp, "none")
+
+def uninformedSearch(edges, origin, dest):
+    h_vals = defaultdict(lambda: 0)
+    return informedSearch(edges, origin, dest, h_vals)
 
 def read_lines_from_file(name):
     '''
@@ -88,11 +144,11 @@ def process_heuristic_file(heuristic_filename):
         lines = read_lines_from_file(heuristic_filename)
         dbgp(f'"{heuristic_filename}" heuristic file opened successfully.')
 
-        h_vals = dict()
+        h_vals = defaultdict(lambda: 0)
 
         for line in lines:
-            city, heuristic_val = line
-            h_vals[city] = int(heuristic_val)
+            city_name, heuristic_val = line
+            h_vals[city_name] = float(heuristic_val)
 
         return h_vals
 
@@ -111,16 +167,21 @@ def process_input_file(infile):
         lines = read_lines_from_file(infile)
         dbgp(f'"{infile}" infile opened successfully')
 
-        city_count = 0
-        city_idx = dict()
+        edges = defaultdict(lambda: defaultdict(lambda: None))
 
         for line in lines:
             src, dest, cost = line
+            edges[src][dest] = float(cost)
+            edges[dest][src] = float(cost)
+
+        '''
             if src not in city_idx:
                 city_idx[src] = city_count
+                city_idx[city_count] = src
                 city_count += 1
             if dest not in city_idx:
                 city_idx[dest] = city_count
+                city_idx[city_count] = dest
                 city_count += 1
 
         # The size of the nxn matrix. n max is the number of edges * 2, because
@@ -143,12 +204,16 @@ def process_input_file(infile):
 
         for line in lines:
             src, dest, cost = line
-            cost = int(cost)
+            cost = float(cost)
             adj_matrix[city_idx[src]][city_idx[dest]] = cost
             adj_matrix[city_idx[dest]][city_idx[src]] = cost
-        return city_count, city_idx, adj_matrix
 
-def final_output():
+        return city_count, city_idx, adj_matrix
+        '''
+
+        return edges
+
+def final_output(edges, cuml_cost, n_gen, n_exp, path):
     # >>> Example output:
     # nodes expanded: 12
     # nodes generated: 20
@@ -156,12 +221,22 @@ def final_output():
     # route:
     # Bremen to Hannover, 132.0 km
     # Hannover to Kassel, 165.0 km
-    print('nodes expanded:', nodes_exp)
-    print('nodes generated:', nodes_gen)
-    print('distance:', cum_cost)
+    print('nodes expanded:', n_exp)
+    print('nodes generated:', n_gen)
+    if cuml_cost == 'infinity':
+        print(f'distance: infinity')
+    else:
+        print(f'distance: {cuml_cost:.1f} km')
     print('route:')
-    for step in steps:
-        print(f'{src} to {dest}, {cost:.1f} km')
+    if path == 'none':
+        print('none')
+    else:
+        for i in range(len(path) - 1):
+            from_city = path[i]
+            to_city = path[i+1]
+            edge_cost = edges[from_city][to_city]
+            print(f'{from_city} to {to_city}, {edge_cost:.1f} km')
+    exit(0)
 
 def main():
     dbgp("Verbose/debugging output is on.")
@@ -175,17 +250,16 @@ def main():
          f'{"dest":<15}{dest}\n\t\t\t\t\t'
          f'{"heuristic_file":<15}{heuristic_file}')
 
-    city_count, city_idx, adj_matrix = process_input_file(infile)
-    h_vals = None
+    edges = process_input_file(infile)
+    h_vals = defaultdict(lambda: 0)
 
     if heuristic_file is not None:
         h_vals = process_heuristic_file(heuristic_file)
+        dbgp(f'h_vals: {h_vals}', '\n')
 
-    dbgp(f'h_vals: {h_vals}', '\n')
-    dbgp('adj_matrix:')
-    for i, row in enumerate(adj_matrix):
-        dbgp(row)
+        informedSearch(edges, origin, dest, h_vals)
+    else:
+        uninformedSearch(edges, origin, dest)
 
 if __name__ == '__main__':
     main()
-    print('End of program. Goodbye.')
